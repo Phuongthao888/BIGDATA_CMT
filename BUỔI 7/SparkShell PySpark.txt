@@ -1,0 +1,37 @@
+-TẠO DF VÀ LƯU DF
+
+spark = SparkSession.builder.appName("example").getOrCreate()
+
+
+data = [("Alice", 1), ("Bob", 2), ("Charlie", 3)]
+columns = ["Name", "Age"]
+
+df = spark.createDataFrame(data, columns)
+
+
+output_path = "/home/phuongthao/dataframe"
+df.write.csv(output_path, header=True, mode="overwrite")
+
+
+
+- ĐẾM TỪ file.txt
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, split, explode
+
+# Khởi tạo SparkSession
+spark = SparkSession.builder.appName("word_count").getOrCreate()
+
+# Đọc dữ liệu từ tệp tin văn bản
+input_path = "/home/phuongthao/count.txt"
+CountPy = spark.read.text(input_path)
+
+# Chia các dòng thành các từ và mở rộng chúng thành các hàng mới
+CountWords_df = CountPy.select(explode(split(col("value"), " ")).alias("word"))
+
+# Đếm số lượng từ
+Counts = CountWords_df.groupBy("word").count()
+
+# Hiển thị kết quả
+Counts.show()
+muốn hiển thị nhiều hơn thì show(giá trị), head(giá trị)

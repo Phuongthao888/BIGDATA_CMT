@@ -1,0 +1,269 @@
+import org.apache.spark.sql.types._
+import org.apache.spark.storage.StorageLevel
+import scala.io.Source
+import scala.collection.mutable.HashMap
+import java.io.File
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
+import scala.collection.mutable.ListBuffer
+import org.apache.spark.util.IntParam
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.StructField
+
+import org.apache.spark.sql.DataFrame
+
+Phien banr spark 3,1 tro len, dung concat de noi 2 df 
+import org.apache.spark.sql.functions.concat
+
+- Tao file
+scala> 
+val qlsv = Seq(Row("PhuongThao","pt@gmail.com",2003),Row("NgocThong","nt@gmail.com",2001),Row("HoaiPhong","hp@gmail.com",2003),Row("TrongPhuc","tp@gmail.com",2003))
+val qlsv1 = Seq(Row("MinhHan","mh@gmail.com",2003))
+
+scala> 
+val qlsvstruct = List(StructField("Name",StringType,true),StructField("Mail",StringType,true),StructField("Age",IntegerType,true))
+val qlsv1struct = List(StructField("Name",StringType,true),StructField("Mail",StringType,true),StructField("Age",IntegerType,true))
+
+scala> 
+val qlsvDF = spark.createDataFrame(spark.sparkContext.parallelize(qlsv),StructType(qlsvstruct))
+val qlsv1DF = spark.createDataFrame(spark.sparkContext.parallelize(qlsv1),StructType(qlsv1struct))
+scala> 
+qlsvDF.show
+qlsv1DF.show
+
+
+Noi 2 df vua tao lai voi nhau
+import thu vien concat
+scala> val qlsvTong = qlsv1DF.selectExpr("*").union(qlsvDF)
+
+
+
+
+
+Luu DF
+// Đặt đường dẫn tới nơi lưu file CSV
+val outputPath = "/home/phuongthao/baocao7/qlsv/"
+val output1Path = "/home/phuongthao/baocao7/qlsv1/"
+
+qlsvDF.write.format("csv").mode("overwrite").option("header", "true").save(outputPath)
+qlsv1DF.write.format("csv").mode("overwrite").option("header", "true").save(output1Path)
+
+- TAI FILE CSV LEN
+
+val csv2 = spark.read.format("csv").option("header", "true").load("file:///home/phuongthao/Downloads/fb2")
+csvDF.show
+
+
+
+
+
+
+
+
+
+- TAI FILE JSON LEN 
+
+// Import relevant Spark classes
+import org.apache.spark.sql.SparkSession
+
+// Create a Spark session
+val spark = SparkSession.builder().appName("one").getOrCreate()
+
+// Specify the path to your JSON file
+val jsonFilePath = "/path/to/your/file.json"
+
+// Read the JSON file into a DataFrame
+val jsonDF = spark.read.json("file:///home/phuongthao/Downloads/filejson")
+
+// Show the schema of the DataFrame
+jsonDF.printSchema()
+
+// Show the first few rows of the DataFrame
+jsonDF.show()
+
+
+
+
+
+
+- NOI 2 DATAFRAME VOI NHAU
+
+val spark = SparkSession.builder().appName("example").getOrCreate()
+
+val csv1 = spark.read.format("csv").option("header", "true").load("file:///home/phuongthao/Downloads/fb1")
+
+val csv2 = spark.read.format("csv").option("header", "true").load("file:///home/phuongthao/Downloads/fb2")
+val csv3 = csv2.union(csv1)
+csv3.show
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-GHI DATA VAO .PARQUET
+csv3.write.mode("overwrite").parquet("/home/phuongthao/tmpspark")
+
+
+-DOC DATA .PARQUET
+val csv3Parquet = spark.read.parquet("/home/phuongthao/tmpspark")
+
+
+- EXPLODE COT TRONG DATAFRAME
+LAY dataframe cua RDD dau trang
+import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.types.{ArrayType, StringType, StructField, StructType}
+
+val spark = SparkSession.builder().appName("example").getOrCreate()
+
+val rdd1 = Seq(
+  Row(Seq("PhuongThao", "pt@gmail.com", "500")),
+  Row(Seq("NgocThong", "nt@gmail.com", "500")),
+  Row(Seq("HoaiPhong", "hp@gmail.com", "400")),
+  Row(Seq("TrongPhuc", "tp@gmail.com", "400"))
+)
+
+val schema = StructType(Seq(
+  StructField("employees", ArrayType(StringType, containsNull = false))
+))
+
+val df = spark.createDataFrame(spark.sparkContext.parallelize(rdd1), schema)
+
+val explodeDF = df.selectExpr("explode(employees) as employee")
+explodeDF.show()
+
+
+- Sử dụng filter () để trả về các hàng khớp với một đơn vị từ
+// Create a DataFrame
+
+// Sample data
+val data = Seq(
+  Row("PhuongThao", "pt@gmail.com", 500),
+  Row("NgocThong", "nt@gmail.com", 500),
+  Row("HoaiPhong", "hp@gmail.com", 400),
+  Row("TrongPhuc", "tp@gmail.com", 400)
+)
+
+// Define the schema
+val schema = StructType(Seq(
+  StructField("Name", StringType, true),
+  StructField("Mail", StringType, true),
+  StructField("Salary", IntegerType, true)
+))
+
+
+val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+
+// Specify the column name and desired value
+val columnName = "Salary"
+val desiredValue = <500;
+
+// Use filter to get rows where the specified column matches the desired value
+val filteredDF = df.filter(s"$columnName = '$desiredValue'")
+
+// Show the resulting DataFrame
+filteredDF.show()
+
+- Su dung ham WHERE TRONG SPARK-SHELL
+
+// Create DataFrame
+val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+// Replace "columnName" and "desiredValue" with your actual column name and value
+val columnName = "Name"
+val desiredValue = "PhuongThao"
+
+// Use where() to get rows where the specified column matches the desired value
+val filteredDF = df.where(s"$columnName = '$desiredValue'")
+
+// Show the resulting DataFrame
+filteredDF.show()
+
+Thay thế các giá trị trong DataFrames null bằng fillna()
+import org.apache.spark.sql.SparkSession
+
+// Khởi tạo SparkSession
+val spark = SparkSession.builder.appName("example").getOrCreate()
+
+// Tạo DataFrame mẫu
+val data = Seq(
+  Row("PhuongThao", null, 400),
+  Row("NgocThong", "nt@gmail.com", 400),
+  Row("HoaiPhong", "hp@gmail.com", 400),
+  Row(null, "tp@gmail.com", 400)
+)
+
+val columns = Seq("Name", "Mail", "Salary")
+val df = spark.createDataFrame(data).toDF(columns: _*)
+
+// Hiển thị DataFrame trước khi thay thế giá trị null
+df.show()
+
+// Thay thế giá trị null bằng giá trị mới (ví dụ: 0)
+val dfFilled = df.na.fill(0)
+val dfFilled = df.na.fill("--")
+
+// Hiển thị DataFrame sau khi thay thế giá trị null
+dfFilled.show()
+
+Chỉ truy xuất các hàm bị thiếu giá trị
+
+import org.apache.spark.sql.SparkSession
+
+
+val spark = SparkSession.builder.appName("example").getOrCreate()
+
+
+val data = Seq(
+  Row(null, "pt@gmail.com", 500),
+  Row("NgocThong", null, 500),
+  Row("HoaiPhong", "hp@gmail.com", 400),
+  Row("TrongPhuc", "tp@gmail.com", 400)
+)
+
+// Define the schema
+val schema = StructType(Seq(
+  StructField("Name", StringType, true),
+  StructField("Mail", StringType, true),
+  StructField("Salary", IntegerType, true)
+))
+
+
+val df = spark.createDataFrame(spark.sparkContext.parallelize(data), schema)
+
+
+# Hiển thị DataFrame trước khi lọc
+df.show()
+
+# Lọc các hàng có giá trị thiếu trong cột "firstName" hoặc "lastName"
+val filterNonNullDF = df.filter(col("Name").isNull || col("Mail").isNull).sort("Salary")
+
+# Hiển thị DataFrame sau khi lọc
+filterNonNullDF.show

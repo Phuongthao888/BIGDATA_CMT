@@ -1,0 +1,39 @@
+Spark Word Countexample sparkshell
+
+-DEM CHU CAI
+scala> val inputFile = sc.textFile("/home/phuongthao/count.txt")
+
+scala> val counts = in
+
+scala> val counts = inputFile.flatMap(line=> line.split("")).map(work =>  (work, 1)).reduceByKey(_ + _);
+
+
+scala> counts.toDebugString 
+
+scala> counts.cache()
+
+
+scala> counts.saveAsTextFile("/home/phuongthao/outputCount")
+
+
+
+user:~ ls -l
+
+user:~ cd output
+
+user:~ cat part-0000
+
+
+-DEM TU
+// Đường dẫn đến tệp văn bản
+scala> val inputFile = sc.textFile("/home/phuongthao/count.txt")
+
+
+// Tách các từ từ các dòng và loại bỏ dấu câu
+scala> val counts = inputFile.flatMap(line => line.replaceAll("[^a-zA-Z\\s]", "").toLowerCase().split("\\s+")).filter(word => word.length > 0)  
+
+// Đếm số lượng từ
+scala> val wordCounts = counts.countByValue()
+
+// Hiển thị từng từ và số lượng
+scala> wordCounts.foreach { case (word, count) => println(s"$word: $count") }
